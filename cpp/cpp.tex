@@ -1,0 +1,1778 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true, %set true if you want colored links
+    linktoc=all,     %set to all if you want both sections and subsections linked
+    linkcolor=blue,  %choose some color if you want links to stand out
+}
+
+
+
+\begin{document}
+
+\begin{titlepage}
+	\centering
+	\vspace{1cm}
+	{\scshape\LARGE\textbf{C++ Review \\ Quick Notes} \par}
+	\vspace{2cm}
+	{\LARGE\itshape RajPat\par}
+	\vspace{1cm}
+	%{\large \today\par}
+	{\large 2020\\ October\par}
+	\vfill
+% Bottom of the page
+    thanks to \par
+	\textsc{Cherno, \url{cppreference.com}}
+\end{titlepage}
+
+
+\newpage
+\tableofcontents
+
+\newpage
+\lstlistoflistings
+
+\newpage
+\section{Introduction}
+    \subsection{Header Files}
+        \begin{lstlisting}[language=C++, caption=Header file example]
+            #include <iostream> 
+            // Include file is in one of the folders 
+            // They have to be in one of the include directories. 
+            // Relative path not needed.
+            
+            #include "iostream" 
+            // " " will also work in this case but is discouraged. 
+            // " " are often used for user defined include files with relative paths.
+            
+            #include "../Log.h"
+            // "../Log.h' -> relative to current file.
+            
+            // C standard 
+            #include <stdio.h>
+            
+            // C++ standard
+            // C++ standard does not contain .h extension to differentiate with C standard library.
+            #include <iostream>
+            
+            // Using C header files in C++ file
+            extern "C" {
+            #include <C_header_file.h>
+            }
+        \end{lstlisting}
+    
+    \subsection{Compiler}
+        \begin{enumerate}
+            \item C++ doesn’t care about files $\rightarrow$ files have no meaning. 
+            \item File $\rightarrow$ translation unit $\rightarrow$ object file.
+            \item If you include many cpp files in one cpp file, the compiler is going to generate one large cpp file and 1 translation unit
+            \item Remember, include is just pasting code in file. 
+            \item Different types of C/C++ compilers $\rightarrow$ \textbf{CLANG, G++/GCC, MSVC, LLVM}, etc.
+            \item Generates machine code.
+            \item Can enable assembly output from compiler. This option generates readable data. Obj file is unreadable.
+            \item .asm will have machine code, mnemonics, etc. readable.
+            \item Developer can use compiler optimizations. Optimizations remove unused code (dead code).
+            \item Compiler has few modes/configurations, such as \textbf{Debug} \textbf{Release}. 
+            \item Compiler does constant folding, such as replacing 5*2 to 10 at compile time.
+        \end{enumerate}
+        
+        \subsubsection{Pre-processor}
+            \begin{lstlisting}[language=C++]
+            #include
+            #define
+            #ifdef
+                ...
+            #endif 
+            #if
+            \end{lstlisting}
+        
+            Pre-processor output can be output to a file $\rightarrow$ *.i. This option in Visual studio does not generate obj file $\rightarrow$ useful for debug only.
+        
+    \subsection{Linker}
+        \begin{enumerate}
+            \item Find where each symbol and function is and link them together.
+            \item C runtime library links the main function and knows where it is, first.
+            \begin{enumerate}
+                \item Default entry point is the main() function.
+                \item Can be customized to change entry point to something else other than main().
+            \end{enumerate}
+            
+            \item Compiler errors begin with “C” and linker errors with “L”.
+            \item “Unresolved symbol” is a typical linking error.
+            \begin{enumerate}
+                \item Definition missing but declaration exists.
+                \item If the function is never called and is never defined, but declared, it won’t generate error.
+                \item Static int func() $\rightarrow$ Only defined in this file. So if this func has linker error and is never used, linker can generate the error. 
+            \end{enumerate}
+            
+            \item Multiple definitions of same function definitions is a linker error too.
+            \begin{enumerate}
+                \item Make static func so each cpp file has its own definition of func with same name $\rightarrow$ : no bueno
+                \item Make function inline
+                \item Solution $\rightarrow$ Header-file: declare func \&  Cpp-file: define func
+            \end{enumerate}
+            \item Compiled obj files can be in library or platform APIs, and linker can point to these.
+        \end{enumerate}
+        
+    \subsection{Libraries}
+        \begin{enumerate}
+            \item Either pre-built binaries or build using source code. 
+            \item Source code $\rightarrow$ static or dynamic library. 
+            \item Usually 2 parts in a library $\rightarrow$ *include* and *libraries (lib)*.
+            \item *include* directories have header files, that we can use to find functions that are in binaries.
+            \item *lib* has pre-compiled binaries that can be used for linking.
+        \end{enumerate}
+    
+        \subsubsection{Static Linking}
+            \begin{enumerate}
+                \item Library is put into executable. Linking happens at compile-time.     \item Usually 2 parts in a library $\rightarrow$ *include* and     *libraries (lib)*.
+            \end{enumerate}
+            
+        \subsubsection{Dynamic Linking}
+            \begin{enumerate}
+                \item Linking happens at run-time. i/e/ when executable is launched.
+                \item Load libraries dynamically. DLLs, etc. Libraries are in separate file at run-time and exe can look into this file and pull function pointers whenever needed.
+                \item Another case of dynamic linking is when application does not have any idea of any include/libraries. Developer can use some documentation to look into exact definitions and use them in application. (How? - Google it)
+                \item In addition to including include directory and dll.lib, exe must have access to .dll file (same folder as exe is good enough, can also provide search paths to executable). 
+            \end{enumerate}
+            
+
+
+    \subsection{Variables}
+        \begin{enumerate}
+        \item Stored either in stack or heap
+        \item Primitive data types:
+        \begin{enumerate}
+            \item Char: 1 byte
+            \item Short: 2 bytes
+            \item int: 4 bytes
+            \item long: 4 bytes
+            \item long long: 8 bytes
+            \item float: 4 bytes (eg.float a=5.2f;)
+            \item double: 8 bytes (eg.double a=5.2;) 
+            \item bool: 1 bit (but occupies 1 byte)
+        \end{enumerate}
+        \item To get size of variable, use \textbf{sizeof(boot)}; parenthesis option in Visual Studio.
+        \item Visual Studio in debug mode sets stack memory to “0xcc”, which helps in debug. This is not done by the compiler in release mode as it would slow it up (obviously).
+    
+        \end{enumerate}
+        
+    \subsection{Conditions and Branches}
+        \begin{enumerate}
+            \item Nothing to say, really $\rightarrow$ if, else.
+            
+            \begin{lstlisting}[language=C++, caption=If...else if...else example]
+                if (condition1) {
+                  // condition1=true, condition2 and others are don't care
+                } else if (condition2) {
+                  // condition1=false & condition2=true
+                } else {
+                  // condition1=condition2=false
+                }
+            \end{lstlisting}
+            
+            \item \textbf{Ternary operator}
+            
+            result = (condition) ? (code-condition=true) : (code-condition=false)
+            
+            
+        \end{enumerate}
+        
+        
+    \subsection{Loops}
+        \begin{lstlisting}[language=C++, caption= Loops example]
+            for (int i=0; i<5; i++)
+            {
+                printf("%d", i);
+            }
+            // same as 
+            int i=0; 
+            bool condition=true;
+            for (;condition;)
+            {
+                printf("%d", i);
+                i++;
+                if !(i<5) condition=false;
+            }
+            
+            // while
+            while (condition)
+            {
+                printf("%d", i);
+                i++;
+            }
+            
+            //do while
+            do
+            {        }
+            while (condition)
+        \end{lstlisting}
+    
+        \textbf{Control flows}
+        \begin{enumerate}
+            \item Continue $\rightarrow$ only used inside loop $\rightarrow$ go to next iteration if there is one
+            \item Break $\rightarrow$ loops and switch statement $\rightarrow$ end loop
+            \item Return $\rightarrow$ get out of function
+        \end{enumerate}
+    
+    \subsection{Pragma}
+        \begin{lstlisting}[language=C++]
+        #pragma once 
+        
+        // is same as single include definition as below
+        #ifndef __HEADER__
+        #define __HEADER__
+        ...
+        #endif 
+        \end{lstlisting}
+    
+    \subsection{Operators}
+        \url{https://en.cppreference.com/w/cpp/language/operators}
+    
+    \subsection{Functions}
+        \begin{enumerate}
+            \item void func(void, void ...)
+            \item Returns only one value.
+            \item If values are passed to function as \textbf{values}, it creates a local copy in stack, which vanishes once the function is out of scope.
+            \item Can avoid copying by passing by reference.
+            \item Functions return a *single* value. 
+            \item Multiple values can be returned by function using the following methods:
+            \item \textbf{Method-1: } Define a \textbf{struct} and return it
+            \item \textbf{Method-2: } Pass the return variable by reference and write into it in the function.
+            \item \textbf{Method-3: } If return types are same, define a std::array in the function and return the pointer to array. Example: \textit{static std::array<std::string, 2> function(int a, int b)}. Arrays are created on \textbf{stack}.
+            \item \textbf{Method-4: } If return types are same, define a std::vector and return it. Vectors are created on \textbf{heap}.
+            \item \textbf{Method-5: } std::tuple; example: std::tuple<std::string, int, float> function(int a, int b);
+            
+        \end{enumerate}
+
+    
+\section{Static}
+
+    \subsection{Static variables outside a class or struct}
+        \begin{enumerate}
+        \item Linkage of symbols is internal to the translation unit. 
+        \item No other translation unit is going to see this variable.
+        \end{enumerate}
+        
+    \subsection{Static variables inside a function/scope}
+        When a variable is declared as static, it is allocated for the \textbf{lifetime} of the program. Even though the function is called several times, space for it is allocated only once and the value of the variable in the previous call is preserved even in next function call. 
+    
+    \subsection{Static variables inside a class or struct}
+        \begin{enumerate}
+            \item Linkage of symbols is shared across all instances of class.
+            \item \textbf{Static variables in a class}: As the variables declared as static are initialized only once as they are allocated space in separate static storage, so the static variables in a class are shared by the objects. There can not be multiple copies of the same static variables for different objects. Also because of this reason \textbf{static variables can not be initialized using constructors}.
+        \end{enumerate}
+    
+        \begin{lstlisting}[language=C++, caption=Static example]
+            #include<iostream>
+            class GfG
+            {
+            public:
+                static int i;
+                GfG()
+                {  // Do nothing
+                };
+            };
+              
+            // This is how you initiate static var in a class
+            int GfG::i = 1;   
+            
+            int main()
+            {
+                GfG obj;
+                // prints value of i
+                std::cout << obj.i << std::endl; 
+            }
+        \end{lstlisting}
+
+    \subsection{Static methods inside a class or struct}
+        \begin{enumerate}
+        \item Linkage of function is shared across all instances of class.
+        \item Static methods cannot access non static variables!
+        \item Static method does not have an associated instance. (This is like a method outside a class).
+        \end{enumerate}
+        
+        
+\section{Pointers \& References}
+    \subsection{Pointers}
+    
+    \begin{enumerate}
+        \item It is an integer that holds an address  to a memory location.  
+        \item Pointers: \textbf{bool*}
+        \item References: \textbf{bool\&}
+        \item References are extensions of pointers. 
+        \item References do not occupy memory, they reference to existing variables.        
+    \end{enumerate}
+    
+    \begin{lstlisting}[language=C++, caption=Pointers example]
+        #include <iostream>
+        #include "stdout_log.h"
+        
+        #define LOG(x) std::cout << x << std::endl;
+        
+        // call by value
+        int func1(int val) 
+        {
+        	val++;
+        	return val;
+        }
+        
+        // call by pointer
+        void func2(int* valptr) 
+        {
+        	//valptr++; // increments pointer to next int address
+        	(*valptr)++;	// de-reference and then increment
+        }
+        
+        // call by reference
+        void func3(int& val)
+        {
+        	val++;
+        }
+        
+        
+        int main()
+        {
+        	LOG("\nhello world");
+            int a;
+        	a = 5;
+        	for (int i = 0; i < a; i++) {
+        		stdout_log("hello world");
+        	}
+        
+        	LOG("\npointers");
+        	// pointers
+        	{
+        		int var = 10;
+        		//void* ptr = nullptr; 
+        		//  0 is not a valid memory address. THis is null
+        		//  this wont work: ptr = &var;
+        		
+        		//void* ptr = &var;
+        		//std::cout << *ptr << std::endl;
+        		int* ptr = &var;
+        		std::cout << *ptr << std::endl;
+        	}
+        	LOG("\nallocate to heap,  pointer to pointer");
+        	// allocate to heap,  pointer to pointer
+        	{
+        		char* buffer = new char[8];
+        		char** ptr = &buffer;
+        		memset(buffer, 0, 8);
+        		delete[] buffer;
+        	}
+        	LOG("\npointers and references");
+        	// pointers and references
+        	{
+        		int a = 10;
+        		int* ptr = &a;	// pointer
+        		int& ref = a;	// reference -> this variable doesn't exist
+        		LOG(a);		// 10
+        		LOG(ptr);	// 009EF8BC
+        		LOG(*ptr);	// 10
+        		LOG(ref);	// 10
+        		ref++;
+        		LOG(a);		// 11
+        	}
+        	LOG("\ncall by value and call by ref");
+        	//call by value and call by ref
+        	{
+        		int a = 10;
+        		LOG(a);	        //10
+        		LOG(func1(a));	//11
+        		LOG(a);	        //10
+        		func2(&a);
+        		LOG(a);	        //11
+        		func3(a);
+        		LOG(a);	        //12
+        	}
+        }
+        \end{lstlisting}
+        
+    \subsection{Smart Pointers}
+        Smart pointers automate \textbf{new} and \textbf{delete}. These are *wrappers* around raw pointers.
+        These are good to keep track of memory used and make sure that "delete" is inherently called to prevent memory leak. 
+        These do not altogether replace *new* and *delete*. 
+        Use *std::unique\_ptr* whenever needed, if not, use *std::shared\_ptr*.
+        
+        \subsubsection{std::unique\_ptr}
+        This is a scoped pointer. 
+        Cannot copy a unique pointer as copy constructor of this class is deleted.
+        
+        \begin{lstlisting}[language=C++, caption=std::unique\_ptr example]
+            #include <iostream>
+            #define Log(x) std::cout << x << std::endl;
+            
+            class Entity
+            {
+            public:
+            	Entity()
+            	{
+            		Log("Created entity");
+            	}
+            
+            	~Entity()
+            	{
+            		Log("Destroyed entity");
+            	}
+            	void print_info(void)
+            	{
+            		Log("inside entity");
+            	}
+            };
+            
+            int main()
+            {
+            	// std::unique_ptr -> stack allocated object
+            	{
+            		//method 1
+            		//std::unique_ptr<Entity> entity(new Entity());
+            
+            		//method 2 - preferred way
+            		//if constructor throws exception, would not result in dangling pointer
+            		std::unique_ptr<Entity> entity = std::make_unique<Entity>();
+            		entity->print_info();
+            
+            	}
+            }
+            Output:
+            Created entity
+            inside entity
+            Destroyed entity
+        \end{lstlisting}
+        
+        \subsubsection{std::shared\_ptr}
+        Compiler maintains a *ref count* to keep track of how many pointers point to object. Only when all of them are out of scope is when then the underlying object gets destroyed.
+        
+        \begin{lstlisting}[language=C++, caption=std::shared\_ptr example]
+            #include <iostream>
+            #define Log(x) std::cout << x << std::endl;
+            
+            class Entity
+            {
+            public:
+            	Entity()
+            	{
+            		Log("Created entity");
+            	}
+            
+            	~Entity()
+            	{
+            		Log("Destroyed entity");
+            	}
+            	void print_info(void)
+            	{
+            		Log("inside entity");
+            	}
+            };
+            
+            int main()
+            {
+            	{
+            		std::shared_ptr<Entity> e0;
+            		{
+            			std::unique_ptr<Entity> entity = std::make_unique<Entity>();
+            			// this is how you can create a shared pointer
+            			std::shared_ptr<Entity> sharedEntity = std::make_shared<Entity>();
+            
+            			e0 = sharedEntity;
+            			// entity gets destroyed here
+            		}
+            		// sharedEntity and e0 are pointing to same object. so, even though sharedEntity 
+            		// is no more, since e0 is still refernced to pointer, the destroyer isn't called.	
+            	}
+            	// e0 is destroyed now after this scope
+            	// when all references are gone, that's when the underlying object is destroyed
+            }
+        \end{lstlisting}
+        
+        \subsubsection{std::weak\_ptr}
+        std::weak\_ptr<Entity> weakEntity = sharedEntity;
+        
+        This does not increase *ref count*. 
+        
+    \subsection{Function pointers}
+        \begin{lstlisting}[language=C++, caption=function pointers example]
+            #include <iostream>
+            #include <vector>
+            #define Log(x) std::cout << x << std::endl
+            
+            void func(std::string msg)
+            {
+            	Log(msg);
+            }
+            
+            int val_scale(int value)
+            {
+            	auto x =  value * 2;
+            	Log(x);
+            	return x;
+            }
+            
+            int val_add(int value)
+            {
+            	auto x = value + 2;
+            	Log(x);
+            	return x;
+            }
+            
+            void for_each(const std::vector<int>& values, int(*funcPtr)(int))
+            {
+            	for (int value : values)
+            		funcPtr(value);
+            }
+            
+            int main()
+            {
+            	// call by value
+            	func("message");
+            
+            	// method 1
+            	// auto f = func("hello");	// doesn't work - can't be of type void
+            	auto f = &func; // & is optional
+            	f("method1");	// prints method1
+            
+            	// method 2
+            	void(*var)(std::string txt) = func;
+            	var("method2");	// prints method2
+            
+            	// method3
+            	typedef void(*varFunc)(std::string txt);
+            	varFunc ff = func;
+            	ff("method3");	// prints method3
+            
+            	// example2
+            	// we have a vector of variables and we want a func 
+            	// to iterate and perform some action
+            	std::vector<int> values = { 1,2,3,4,5,6,7 };
+            	for_each(values, val_scale);
+            	// prints 2, 4, 6, 8, 10, 12 14
+            }
+            
+        \end{lstlisting}
+    
+    \subsection{Lambdas}
+        Wherever we use function pointers to functions, we can use lambdas. 
+        
+        
+\section{Arrays}
+    \subsection{Raw arrays, C++ <array>}
+        \begin{enumerate}
+            \item Arrays are collection of elements, i.e. contiguous segment of memory.
+            
+            \item Arrays created in \textbf{heap}  with *new* keyword result in memory indirection and maybe a performance hit depending on access frequency.
+            
+            \item In C++11, there is an inbuilt *standard array* data structure, different than the raw array shown in the below example. 
+                
+        \end{enumerate}
+        \begin{lstlisting}[language=C++, caption=Raw arrays - Stack vs Heap example]
+            #include <iostream>
+            #include <array> // C++11 standard array
+            #define Log(x) std::cout << x << std::endl;
+            
+            int main()
+            {
+            	// created on stack - will be destroyed after scope
+            	// size has to be a compile time constant
+            	int array1[5];
+            
+            	// initialize
+            	for (int i = 0; i < 5; i++)
+            		array1[i] = i;
+            
+            	// prints address of first element
+            	Log(array1);	
+            
+            	Log(sizeof(array1));	// prints 20 = 5*4
+            
+            	// prints 0, 1, 2, 3, 4
+            	for (int i = 0; i < 5; i++)
+            		Log(array1[i]); 
+            
+            	
+            	// prints 0, 1, 2, 3, 4
+            	char* ptr = (char *)array1;
+            	for (int i = 0; i < 5; i++)
+            	{
+            		Log(*(int*)(ptr));
+            		ptr = ptr + 4;
+            	}
+            
+            	// dynamic memory allocation
+            	// will be created on heap - will not be destroyed after scope
+            	// must delete manually
+            	int* another = new int[5];
+            
+            	// initialize
+            	for (int i = 0; i < 5; i++)
+            		another[i] = array1[i];
+            
+            	Log(sizeof(another));	// prints 4 as another is a pointer
+            
+            	// free the heap before you leave!
+            	delete [] another;
+            
+            	// c++11 standard array
+            	// this is static array - size doesn't change
+            	std::array<int, 5> another1;
+            	Log(sizeof(another1));	// prints 20 = 5*4
+            } 
+        \end{lstlisting}
+
+    \subsection{Dynamic Arrays: std::vector}
+        When it comes to re-sizing, the entire data structure has to be copied by compiler, so it would be a performance hit. 
+        
+        \begin{lstlisting}[language=C++, caption=std::vector example]
+            #include <iostream>
+            #include <vector>
+            
+            #define Log(x) std::cout << x << std::endl;
+            
+            int main()
+            {
+            	// dynamic arrays
+            	std::vector<int> ints;
+            
+            	struct Vertex {
+            		int x, y, z;
+            	};
+            	std::vector<Vertex> vars;
+            	vars.push_back({ 1,2,3 });	// add item
+            	// this constructs vertex in main and then copies it to struct/class
+	            vars.push_back({ 4,5,6 });
+            	Log(vars[0].y); // can iterate - 2
+            	Log(vars.size());	// 2
+            
+            	// iterate through dynamic array
+            	for (Vertex v : vars) // copies the data
+            		Log(v.z); // 3, 6
+            
+            	for (Vertex& v : vars) // reference - no data copy
+            		Log(v.z); // 3, 6
+            
+            	vars.erase(vars.begin()+1);
+            	Log(vars.size());	// 1
+            	
+            	for (Vertex& v : vars) 
+            		Log(v.z); // 3
+            	
+            	vars.clear();
+            } 
+        \end{lstlisting}
+        
+        \begin{enumerate}
+            \item Can use \textbf{vars.reserve(2);} to reserve memory for 2 objects and avoid re-sizing. This improves perf. 
+            \item Use \textbf{vars.emplace\_back()} if vars is class and thus calls constructor in place. This avoids copying from main to object
+        \end{enumerate}
+        
+
+\section{Strings}
+    \subsection{C Style - char array}
+        \begin{enumerate}
+            \item Strings are array of characters.Characters are representations of symbols (letters, numbers, etc.). 
+            \item Numerous types of character encoding: utf8 has 256 characters, utf16 has 2\^16. 
+        \end{enumerate}        
+        \begin{lstlisting}[language=C++, caption=C style char array]
+            #include <iostream>
+            #define Log(x) std::cout << x << std::endl;
+            
+            int main()
+            {
+            	// This is C type
+            	// const as strings are immutable
+            	// these are not allocated on heap
+            	const char* name = "raj";	// char * if " "
+            	Log(name);	// raj
+            
+            	// technically possible to use just char
+            	char* newName = (char *)"apple";
+            	Log(newName);	// apple
+            
+            	// end of string is null termination character
+            	char eg[6] = {'R', 'a', 'j'};
+            	Log(eg);	// Raj
+            
+            	char eg1[6] = { 'a', 'p', 'p', 'l', 'e', 't' };
+            	Log(eg1);	// applet8903725098:random data until it hits null term 
+            	// without null character, it doesn't know where to stop printing
+            	// null termination is '\0'.
+            	
+        		// strlen to find length of string
+            	Log(strlen(eg));	// 3
+            	Log(strlen(eg1));	// 19
+            	
+            	// strcopy_s to copy strings
+            	// strcopy is unsafe as it can reult in buffer overflow
+            	strcpy_s(eg1, eg);
+            	Log(eg1);			// Raj
+            }
+        \end{lstlisting}
+        
+    \subsection{C++ style}
+        \begin{enumerate}
+            \item C++ has a class called Basicstring, which is a template class.
+            \item std::String is a templated specialization of BasicString class with char as underlying parameter.
+            \item std::String is also a char array.
+            \item \url{http://www.cplusplus.com/reference/string/string/}
+             \begin{lstlisting}[language=C++, caption=C++ style strings]
+                #include <iostream>
+                #include <string> 
+                
+                #define Log(x) std::cout << x << std::endl;
+                
+                // This is C++ style
+                int main()
+                {
+                	std::string str = "raj";
+                	Log(str);			// raj
+                	Log(str.size());	// 3
+                	char eg[20] = { 't', 'e', 'a', '\0' };
+                	std::string test ("new string");
+                	
+                	Log(test);	// new string
+                	Log(eg);	// tea
+                	test.copy(eg, 2, 4);
+                	Log(test);	// new string
+                	Log(eg);	// sta
+                
+                	// appending strings
+                	// this does not work as we cannot append 2 const char arrays
+                	// std::string str = "raj" + "tea";
+                	str += "tea";
+                	Log(str);	//rajtea
+                
+                	Log(str.find("ea"));	// 4
+                	Log(str.find("lot"));	// 4294967295 (not correct)
+                }
+             \end{lstlisting}
+        \end{enumerate}      
+        
+    \subsection{String literals}
+        \begin{enumerate}
+            \item "asas" is a string literal.
+            \item String literals are stored in "read-only" locations of memory.
+            \begin{lstlisting}[language=C++, caption=String literals in asm file]
+                ...
+                ;	COMDAT ??_C@_08JOKHDEJH@readonly@
+                CONST	SEGMENT
+                ??_C@_08JOKHDEJH@readonly@ DB 'readonly', 00H		; `string'
+                CONST	ENDS
+                ;	COMDAT ??_C@_03KHJDFILH@lot@
+                CONST	SEGMENT
+                ??_C@_03KHJDFILH@lot@ DB 'lot', 00H			; `string'
+                ...
+            \end{lstlisting}
+        \end{enumerate}
+           
+\section{Const}
+    \begin{enumerate}
+        \item \textbf{char*} is a mutable pointer to a mutable character/string.
+        \item \textbf{const} is a *promise* to not change the contents.
+        \item \textbf{const char*} is a mutable pointer to an immutable character/string (same as \textbf{char const*}). You cannot change the contents of the location this pointer points to. Some compilers give error messages when we try to do so. For the same reason, conversion from \textbf{const char*} to \textbf{char*} is deprecated. Pointer can point to another immutable string/character, but not a good practise.
+        \item \textbf{char* const} is an immutable pointer (it cannot point to any other location) but the contents of location at which it points are mutable. 
+        \item \textbf{const char* const} is an immutable pointer to an immutable character or string.
+        \item const after method name is possible in a Class. This defines that the method does not modify the contents of Class. Can be in "getters".
+            \begin{lstlisting}[language=C++, caption=Const in Class method]
+                const int* const GetX() const
+                {
+                    return m_X;
+                }
+            \end{lstlisting}
+    \end{enumerate}    
+    
+    \subsection{Mutable keyword}
+        \begin{enumerate}
+            \item Mutable enables const method to modify a non-const variable. 
+            \item Mutable can be used with \textbf{const} and \textbf{lambda}.
+        \end{enumerate}
+        \begin{lstlisting}[language=C++, caption=Mutable example with const method]
+            #include <iostream>
+            #include <string>
+            
+            #define Log(x) std::cout << x << std::endl;
+            
+            class MyClass
+            {
+            private:
+            	std::string m_Name;
+            	mutable int m_DebugCount = 0;
+            public:
+            	const std::string& getName() const
+            	{
+            		m_DebugCount++;
+            		return m_Name;
+            	}
+            };
+            
+            int main()
+            {
+            	const MyClass obj;
+            	Log(obj.getName());
+            }
+        \end{lstlisting}
+
+\section{Stack vs Heap}
+    \begin{enumerate}
+        \item Creating in stack: \textbf{className obj;}.
+        \item Variables/objects instantiated in a scope are allocated in \textbf{stack} and disappear after scope is exited.
+        \item If the object/variable is needed outside the scope, we need it to be allocated on heap.
+        \item Stack is usually smaller in size. 
+        \item To allocate on heap, use \textbf{new} keyword.
+        \begin{lstlisting}[language=C++, caption=Heap allocation using "new" example]
+            // heap allocation
+            Entity* obj = new Entity("myName");
+            int* b = new int[50]; // 200 bytes
+            
+            // user MUST free the memory
+            // delete calls destructor
+            delete obj;
+            // if allocation using new is with [], then use [] in delete as well
+            delete[] b;
+        \end{lstlisting}
+        
+        \item Allocating on heap takes longer, has performance downside compared to stack allocation. User is also responsible to free the memory once the memory is not needed.
+        \item Allocating memory on stack is one CPU instruction (mostly) vs allocating on heap, it is quite a it of book-keeping, i.e. $\rightarrow$ malloc, OS checks free-list, etc.
+        
+        \begin{lstlisting}[language=C++, caption=Stack vs Heap example]
+            #include <iostream>
+            #define Log(x) std::cout << x << std::endl;
+            
+            int main()
+            {
+            	// allocate on stack
+            	int a = 5;
+            	int arr[10];
+            
+            	// heap allocation
+            	// new calls malloc()
+            	int* b = new int;
+            	*b = 5;
+            	int* harr = new int[5];
+            	// must delete
+            	delete b;
+            	delete[] harr;
+            
+            	// smart pointers will do new and delete without
+            	// programmer havign to use new/delete
+            }
+            
+        \end{lstlisting}
+    \end{enumerate}
+            
+    \subsection{New keyword}
+    \begin{enumerate}
+        \item Main purpose is to allocate memory on heap. \textbf{int* a = new int;}. This would request OS for 4 contiguous bytes of memory. 
+        \item \textbf{new} also calls constructor for the object instantiation.This is unlike using \textbf{malloc}. 
+        \item Using \textbf{delete e;} is similar to using \textbf{free(e);} function.
+        \item \textbf{new(ptr)} can be used to create a new object at a specific location. This is called \textbf{placement new}.
+    \end{enumerate}         
+
+\section{Enum vs Enum class}
+    \subsection{Enum}
+    Enums are represented in integers.
+    Usually, starting is 0, or can be user specified. 
+        \begin{lstlisting}[language=C++, caption=Enum example]
+            enum Example
+            {
+            	// enums are stores as integers
+            	A, B, C
+            };
+            
+            enum Example2: char
+            {
+            	A2=5, B2, C2
+            };
+            
+            int main()
+            {
+            	Example val = A;
+            	Log(val);	// prints 0
+            	Log(B);		// prints 1
+            
+            	Example2 val2 = A2;
+            	Log(val2);	// some symbol
+            	Log(B2);	// some symbol
+            }
+        \end{lstlisting}
+        
+    \subsection{Enum Class}
+    
+        \begin{lstlisting}[language=C++, caption=Enum class example]
+            #include <iostream>
+            
+            class Log
+            {
+            public:
+            	/*enum LogLevel
+            	{
+            		LogLevelError, LogLevelWarn, LogLevelInfo
+            	};
+            	*/
+            
+            	enum class LogLevel
+            	{
+            		LogLevelError, LogLevelWarn, LogLevelInfo
+            	};
+            	
+            private:
+            	LogLevel m_LogLevel = LogLevel::LogLevelInfo;
+            	
+            public:
+            	void SetLevel(LogLevel level)
+            	{
+            		m_LogLevel = level;
+            	}
+            	
+            	void Error(const char* message)
+            	{
+            		if (m_LogLevel >= LogLevel::LogLevelError)
+            			std::cout << "[ERROR]:"<<message<<std::endl;
+            	}
+            	
+            	void Warn(const char* message)
+            	{
+            		if (m_LogLevel >= LogLevel::LogLevelWarn)
+            			std::cout << "[WARN]:"<<message<<std::endl;
+            	}
+            
+            	void Info(const char* message)
+            	{
+            		if (m_LogLevel >= LogLevel::LogLevelInfo)
+            			std::cout << "[INFO]:"<<message<<std::endl;
+            	}
+            };
+            
+            int main()
+            {
+            	Log log;
+            	// using enums and not enum class
+            	//log.SetLevel(Log::LogLevelError);
+            	//log.SetLevel(Log::LogLevelWarn);
+            	//log.SetLevel(Log::LogLevelInfo);
+            	
+            	log.SetLevel(Log::LogLevel::LogLevelError);
+            	log.SetLevel(Log::LogLevel::LogLevelWarn);
+            	//log.SetLevel(Log::LogLevel::LogLevelInfo);
+            
+            	log.Info(" Just info... ");
+            	log.Warn(" I am warning you... ");
+            	log.Error(" This is error... ");
+            }
+        \end{lstlisting}
+
+\section{"auto" keyword}
+    \begin{enumerate}
+        \item C++ can be used as a weakly typed language. Using \textbf{auto}, compiler can understand the underlying type.
+        \item One used is when a function return, host code in main() need not change, unless the returned value is used for specific type processing.
+        \item if type is long name, such as std::vector<std::string>, etc., using auto makes code readable.
+    \end{enumerate} 
+    
+    \begin{lstlisting}[language=C++, caption=auto example]
+        #include <iostream>
+        #define Log(x) std::cout << x << std::endl
+        
+        int main()
+        {
+        	auto a = 5;		 // int
+        	auto b = "test"; // const char*
+        	auto c = 5.5f;	 // float
+        	Log(a);	// 5
+        	Log(b);	// test
+        	Log(c);	// 5.5
+        }
+    \end{lstlisting}
+    
+    
+\section{Object Oriented Programming}
+    OOP binds together data and methods to transform data (functions) in a way that is encapsulated and hidden from other unrelated methods. 
+    
+    \subsection{OOP Concepts}
+    Object oriented programming comprises of following concepts
+    \begin{enumerate}
+        \item \textbf{Classes}
+        
+        User defined datatype, similar to struct. 
+        
+        \item \textbf{Objects}
+        
+        An object is instance of a class.
+        
+        \item \textbf{Encapsulation}
+        
+        Encapsulation is defined as binding of data and methods processing the data within a class.
+        
+        \item \textbf{Abstraction}
+        
+        Ability to control what is visible outside of class. Also, any downstream method using the function need not know underlying implementation of the said method in order to use it. 
+        
+        \item \textbf{Inheritance}
+        
+        Derive properties from another class. Facilitate abstraction and re usability.
+        
+        \item \textbf{Polymorphism}
+        
+        \textbf{Operator overloading} and \textbf{function overloading} are 2 types of polymorphism in C++. Example: Same person can be a student, athlete at different situations. 
+        
+    \end{enumerate}
+
+    \subsection{Class vs Struct}
+        \begin{enumerate}
+            \item Except visibility, nothing else.
+            \item Backward compatibility to C.
+            \item Class $\rightarrow$ default is private
+            \item struct $\rightarrow$ default is public.
+            \item One common practise if this is only for representation of data, use struct. If the encapsulation has some sense of functionality (i.e. some function to modify the data), then use class to encapsulate the functions along with data.
+        \end{enumerate}
+        
+        \begin{lstlisting}[language=C++, caption=Class vs Struct example]
+            #include <iostream>
+            
+            class Particle
+            {
+            public:
+            	float x, y, z, m;
+            	void get_info(void)
+            	{
+            		std::cout << "x : " << x << std::endl;
+            		std::cout << "y : " << y << std::endl;
+            		std::cout << "z : " << z << std::endl;
+            		std::cout << "m : " << m << std::endl;
+            	}
+            };
+            
+            struct ParticleStruct
+            {
+            	float x, y, z, m;
+            	void get_info(void)
+            	{
+            		std::cout << "x : " << x << std::endl;
+            		std::cout << "y : " << y << std::endl;
+            		std::cout << "z : " << z << std::endl;
+            		std::cout << "m : " << m << std::endl;
+            	}
+            };
+            
+            int main(void)
+            {
+            	Particle p;
+            	p.x = 1.35f;
+            	
+            	ParticleStruct ps;
+            	ps.x = 1.75f;
+            	
+            	p.get_info();
+            	ps.get_info();
+            
+            }
+            
+            Output:
+            x : 1.35
+            y : -1.07374e+08
+            z : -1.07374e+08
+            m : -1.07374e+08
+            x : 1.75
+            y : -1.07374e+08
+            z : -1.07374e+08
+            m : -1.07374e+08
+    
+        \end{lstlisting}
+        
+    \subsection{Constructors}
+    
+    \begin{enumerate}
+        \item Special method that runs every time an object is instantiated. (Similar to  \_\_init\_\_ in python)
+        \item Used to initialization of variables, etc. inside the class.
+        \item Same name as class. Entity() {}
+        \item C++ provides a default constructor for the class which is empty. Hence, when we have a class with only static variables and static methods, it is important to delete the constructor.
+
+        \begin{lstlisting}[language=C++, caption=Delete constructor example]
+            class Log
+            {
+                Public:
+                Log() = delete;    // <- ThIs is to delete default constructor
+                Static void Write()
+                {
+                }
+            };
+        \end{lstlisting}
+    
+        \item \textbf{explicit} keyword can be added to constructor to prevent implicit conversions by compiler. C++ compiler can make 1 implicit conversion.
+        \begin{lstlisting}[language=C++, caption=Explicit keyword]
+            explicit Entity(int age)
+                : m_Name("unknown'), m_Age(age) {}
+            
+            // This constructor will prevent the following implicit conversion by compiler
+            // If explicit keyword is not used in constructor, this will work
+            Entity b = 22;  
+            //.. but this will work 
+            Entity b(22);
+        \end{lstlisting}
+    
+    \end{enumerate}
+   
+    \subsubsection{Copy constructor}
+        
+        Default provided by compiler. 
+        
+        Creates a new object, exact same copy of existing object.
+        
+        Copy constructor is called when new object is created from existing object while assignment operator is called when already initialized object is assigned a new value from different object. 
+        \begin{lstlisting}[language=C++, caption=Copy constructor example]
+            #include <iostream>
+            #define Log(x) std::cout << x << std::endl;
+            
+            class Entity
+            {
+            private:
+            	int id;
+            public:
+            	int x, y;
+            	Entity() 
+            	{
+            		x = 0; y = 0; id = 0;
+            	}
+            	//function overloading for constructor - parameterized
+            	Entity(int vx, int vy)
+            	{
+            		x = vx;
+            		y = vy; id = 0;
+            	}
+            	// user-define copy constructor
+            	// if this is commented out, copy will still work with same syntax as shown in last line in main (e3 definition), but compiler does a shallow copy and not a deep copy.
+            	Entity(Entity& obj)
+            	{
+            		x = obj.x;	y = obj.y;	id = obj.id;
+            	}
+            	// polymorphism
+            	virtual void get_info(void)
+            	{
+            		Log(x);
+            		Log(y);
+            	}
+            };
+            
+            class Player : public Entity
+            {
+            	// anything that is not private in entity class is accessible by player
+            public:
+            	const char* name;	// 4 bytes
+            
+            	Player(const char* nName)
+            	{
+            		name = nName;
+            	}
+            
+            	void get_info(void) override
+            	{
+            		Log(name);
+            	}
+            };
+            
+            
+            int main()
+            {
+            	Player player("Raj");
+            	player.get_info();  // Raj
+            	
+            	Entity* entity = &player;
+            	entity->get_info(); // Raj
+            
+            	Entity e1(5, 6); 
+            	Entity e2;
+            	e1.get_info();	// 5, 6
+            	e2.get_info();	// 0, 0
+            	Entity e3(e1);
+            	
+            	e3.get_info();	// 5, 6 - deep copy
+            }
+
+            
+        \end{lstlisting}
+        
+        Can delete copy constructor if you want to prevent copying, such as *Entity() = delete;*.
+    
+    \subsubsection{Constructor initializer list}
+        Creates only the instance needed instead of dual copies in derived classes. If you aren't using them, it affects performance.
+        \begin{lstlisting}[language=C++, caption=Member initializer list example]
+            Entity()	// constructor
+    		: x(0), y(0), id(55) // member initializer list
+    	    {}
+        \end{lstlisting}
+    
+    
+    \subsection{Destructors}
+        \begin{enumerate}
+        \item Special method to destroy an object.
+        \item Stack and heap cleanup.
+        \item Same name as class with ~ at beginning ~Entity() {}
+        \end{enumerate}
+    
+        \begin{lstlisting}[language=C++, caption=Constructor \& Destructor example with overloading]
+        
+            #include <iostream>
+            #define Log(x) std::cout << x << std::endl;
+            class Entity
+            {
+            public:
+            	int x, y;
+            	Entity()	// constructor
+            	{
+            		x = 0; y = 0;
+            	}
+            
+                // constructor - function overloading
+            	Entity(int vx, int vy)	
+            	{
+            		x = vx; y = vy;
+            	}
+            
+            	~Entity()	// destructor
+            	{
+            		// nothing to destroy here as ints are local and scope is limited.
+            		Log(x);
+            		Log("destroyed");
+            	}
+            
+            	void get_info(void)
+            	{
+            		Log(x);
+            		Log(y);
+            	}
+            };
+            
+            void func(void)
+            {
+            	Entity e;
+            	e.get_info();
+            
+            	Entity e1(5, 6);
+            	e1.get_info();
+            }
+            
+            
+            int main()
+            {
+            	func();
+            }
+
+            Output:
+            0
+            0
+            5
+            6
+            5
+            destroyed
+            0
+            destroyed
+        \end{lstlisting}
+        
+    
+    \subsection{Singleton Class}
+    
+    \subsection{"this" keyword}
+        It is available inside the member function of the class.
+        \begin{lstlisting}[language=C++, caption='this" keyword example]
+            #include <iostream>
+            #define Log(x) std::cout << x << std::endl;
+            
+            class Entity
+            {
+            	public:
+            		int x, y;
+            		Entity(int x, int y)
+            		{
+            			this->x = x;
+            			this->y = y;
+            		}
+            
+            		int GetX() const
+            		{
+            			return this->x;
+            		}
+            };
+            
+            int main()
+            {
+            	Entity e(5, 6);
+            	Log(e.GetX());	// prints 5
+            }    
+        \end{lstlisting}
+        
+    \subsection{Inheritance}
+        Allows us to have relationships between classes.
+
+        \begin{lstlisting}[language=C++, caption=Inheritance example]
+            #include <iostream>
+            
+            #define Log(x) std::cout << x << std::endl;
+            
+            class Entity
+            {
+            private:
+            	int id;	// cant access this outside of Entity class objects
+            public:
+            	int x, y;
+            
+            	Entity()	// constructor
+            	{
+            		x = 0; y = 0; id = 55;
+            	}
+            
+            	Entity(int vx, int vy, int vid)	// constructor - function overloading
+            	{
+            		x = vx; y = vy; id = vid;
+            	}
+            
+            	~Entity()	// destructor
+            	{
+            		// nothing to destroy here as ints are local and scope is limited.
+            		Log("destroyed");
+            	}
+            
+            	void get_info(void)
+            	{
+            		Log(x);
+            		Log(y);
+            	}
+            
+            	void move(int xa, int ya)
+            	{
+            		x += xa;
+            		y += ya;
+            	}
+            
+            };
+            
+            class Player : public Entity
+            {
+            	// anything that is not private in entity class is accessible by player
+            public:
+            	const char* name;	// 4 bytes
+            
+            	Player(const char* nName)
+            	{
+            		name = nName;
+            	}
+            
+            	void get_name(void)
+            	{
+            		Log(name);
+            	}
+            };
+            
+            
+            void func(void)
+            {
+            	Entity e;
+            	e.get_info();
+            
+            	Entity e1(5, 6, 7);
+            	e1.get_info();
+            }
+            
+            
+            int main()
+            {
+            	//func();
+            
+            	Player player("Raj");
+            	player.get_info();
+            	player.move(1, 2);
+            	player.get_info();
+            	player.get_name();
+            
+            	Log(sizeof(Entity));
+            	Log(sizeof(Player));
+            	Log(player.x);
+            	//Log(player.id); // can't access as id is private in entity
+            	
+            }
+        \end{lstlisting}
+        
+        \subsubsection{Multiple inheritance}
+        class C : public A, public B
+        
+        Order of initalization: A $\rightarrow$ B $\rightarrow$ C
+        
+    \subsection{Arrow operator}
+    \begin{enumerate}
+        \item For Entity* ptr;, to access methods of the object, we have to de-reference the pointer as follows: (*ptr).method().
+        \item Instead, could use ptr->method() and this would make our life easier as we do not have to de-reference pointer.
+        \item Can also use in struct for example, as shown below.
+    \end{enumerate}
+    
+    \begin{lstlisting}
+        #include <iostream>
+        #define Log(x) std::cout << x << std::endl;
+        struct Vector3
+        {
+        	float x, y, z;
+        };
+        int main()
+        {
+            Vector3 a;
+        	a.x = 3.0f; a.y = 4.1f; a.z = 17.2f;
+        	Log(a.x);	//prints 3
+        
+        	Vector3* b = new Vector3;
+        	b->x = 4.2f;
+        	Log(b->x);	// prints 4.2
+        	Log(b->y);	// prints random float
+    	}
+    \end{lstlisting}
+    
+    
+    
+    
+    \subsection{Friend}
+        \subsubsection{Friend Class}
+        \begin{lstlisting}[language=C++, caption=Friend Class]
+            class Parent
+            {
+            private:
+                int x, y;
+                
+                //class SomeClass can access private members of Parent class.
+                friend class SomeClass;
+            };
+        \end{lstlisting}
+        
+        \subsubsection{Friend Function}
+        \begin{lstlisting}[language=C++, caption=Friend Function]
+            class Parent
+            {
+            private:
+                int x, y;
+                
+                // function() of SomeClass can access private members of Parent.
+                friend int SomeClass::function();
+            };
+        \end{lstlisting}
+        
+        
+    \subsection{Polymorphism}
+    Polymorphism $\rightarrow$  Compile-time \& Run-time
+    
+    Compile-time $\rightarrow$ Function overloading and operator overloading
+    
+    Run-time $\rightarrow$ Virtual functions
+    
+        \subsubsection{Compile-time: Function \& operator overloading}
+        \url{https://en.cppreference.com/w/cpp/language/operators} is a good place to look at all C++ operators. 
+        
+        \begin{lstlisting}[language=C++, caption=Function \& operator overloading example]
+            #include <iostream>
+            #define Log(x) std::cout << x << std::endl;
+            
+            class Entity
+            {
+            private:
+            	int id;
+            public:
+            	int x, y;
+            	Entity()
+            	{
+            		x = 0; y = 0; id = 0;
+            	}
+            	//function overloading for constructor - parameterized
+            	Entity(int vx, int vy, int vid)
+            	{
+            		x = vx;	y = vy; id = vid;
+            	}
+            	//function overloading
+            	void func(int vx)
+            	{
+            		x = vx; y = 2 * x; id = 2 * y;
+            	}
+            	//function overloading
+            	void func(float vx)
+            	{
+            		x = x*vx; y = x; id = id/2;
+            	}
+            	// operator overloading
+            	Entity operator + (Entity& obj)
+            	{
+            		Entity result;
+            		result.x = x + obj.x;
+            		result.y = y + obj.y;
+            		result.id = id + obj.id;
+            		return result;
+            	}
+            	void get_info(void)
+            	{
+            		Log(x); Log(y); Log(id);
+            	}
+            };
+
+            // overloading << operator
+            std::ostream& operator<<(std::ostream& stream, const Entity& obj)
+            {
+            	stream << obj.x << ", " << obj.y;
+            	return stream;
+            }
+            
+            int main()
+            {
+            	Entity e1(5, 6, 2);
+            	Entity e2(3, 1, 4);
+            	e1.get_info();	// 5, 6, 2
+            	e2.get_info();	// 3, 1, 4
+            	Entity e3 = e2 + e1;
+            	e3.get_info();	// 8, 7, 6
+            
+            	e1.func(2);
+            	e1.get_info();	// 2, 4, 8
+            	e1.func(2.1f);
+            	e1.get_info();	// 4, 4, 4
+            	
+            	std::cout << e1 << std::endl;	// prints 4, 4
+            }
+        \end{lstlisting}
+        
+        \subsubsection{Run-time: Virtual Functions}
+        
+        \begin{enumerate}
+            \item Function overriding, as opposed to function overloading in compile-time.
+            \item Virtual functions allow us to override methods in subclasses.
+            \item B is subclass of A. If object of A is needed to call method of B (same method name), then method in A must be defined as virtual function. The method in B overrides method in A.
+            \item Penalty 1: Virtual functions need additional memory to store the "V table". 
+            \item Penalty 2: Secondly, every time we call the function, it adds penalty to look into which virtual function needs to be used. 
+            \item A class can have a virtual destructor but not a virtual constructor.
+            \item Virtual function cannot be static and friend.
+    
+        \end{enumerate}
+    
+        \begin{lstlisting}[language=C++, caption=Without virtual function example]
+            #include <iostream>
+            #define Log(x) std::cout << x << std::endl;
+            
+            class Entity
+            {
+            private:
+            	int id;
+            public:
+            	int x, y;
+            	void get_info(void)
+            	{
+            		Log(x);
+            		Log(y);
+            	}
+            };
+            
+            class Player : public Entity
+            {
+            	// anything that is not private in entity class is accessible by player
+            public:
+            	const char* name;	// 4 bytes
+            
+            	Player(const char* nName)
+            	{
+            		name = nName;
+            	}
+            
+            	void get_info(void) 
+            	{
+            		Log(name);
+            	}
+            };
+            
+            
+            int main()
+            {
+            	Player player("Raj");
+            	player.get_info();
+            	
+            	Entity* entity = &player;
+            	entity->get_info();
+            }
+    
+            Output:
+            Raj
+            0
+            0
+        \end{lstlisting}
+        
+        \begin{lstlisting}[language=C++, caption=Virtual function example]
+            #include <iostream>
+            #define Log(x) std::cout << x << std::endl;
+            
+            class Entity
+            {
+            private:
+            	int id;
+            public:
+            	int x, y;
+            	virtual void get_info(void)
+            	{
+            		Log(x);
+            		Log(y);
+            	}
+            };
+            
+            class Player : public Entity
+            {
+            	// anything that is not private in entity class is accessible by player
+            public:
+            	const char* name;	// 4 bytes
+            
+            	Player(const char* nName)
+            	{
+            		name = nName;
+            	}
+            
+            	void get_info(void) override
+            	{
+            		Log(name);
+            	}
+            };
+
+            int main()
+            {
+            	Player player("Raj");
+            	player.get_info();
+            	
+            	Entity* entity = &player;
+            	entity->get_info();
+            }
+    
+            Output:
+            Raj
+            Raj
+        \end{lstlisting}
+
+        \subsubsection{Run-time: Pure virtual functions}    
+        \begin{enumerate}
+            \item This is a specific type of virtual function, which has no implementation in base function, but have implementation in the subclass.
+            \item A class with only virtual functions is called as interface. Since there are no implementations, we cannot instantiate this class. 
+            
+        \end{enumerate} 
+        
+    \subsection{Visibility - 3P's}
+        \begin{enumerate}
+            \item \textbf{Private} 
+            
+            Default visibility of a class is private. Only the class has access to it (other than friend functions/classes).
+            
+            \item \textbf{Protected}
+            
+            Class and all subclasses in hierarchy can access it. But cannot be accessed in main().
+            
+            \item \textbf{Public}
+            
+            Everyone has access to members.     
+        \end{enumerate}
+        
+\section{Templates}
+    \begin{enumerate}
+        \item Templates are macros on steroids.
+        \item Compiler writes code based on rules provided in template.
+        \item Example: Template function.
+            \begin{lstlisting}[language=C++, caption=Template function example]
+                #include <iostream>
+                
+                // print by macro
+                #define Log(x) std::cout << x << std::endl;
+                
+                // print by function
+                void PrintMsg(std::string msg)
+                {
+                	std::cout << msg << std::endl;
+                }
+                
+                // print by function - overload
+                void PrintMsg(int msg)
+                {
+                	std::cout << msg << std::endl;
+                }
+                
+                // template - avoid overloading and code duplication by using single function
+                template<typename T>
+                void templatedPrintMsg(T msg)
+                {
+                	std::cout << msg << std::endl;
+                }
+                
+                int main()
+                {
+                	Log("hello world"); // prints hello world
+                	PrintMsg("hello world");	// prints hello world
+                	PrintMsg(4);	// prints 4
+                	
+                	// implicit usage
+                	const char msg[20] = "hello world";
+                	templatedPrintMsg(msg);	 // prints hello world
+                	templatedPrintMsg(4.4f); // prints 4.4
+                	templatedPrintMsg(3);	 // prints 3
+                
+                	// explicit usage
+                	templatedPrintMsg<int>(8);			 // prints 8
+                	templatedPrintMsg<std::string>(msg); // prints hello world
+                
+                	// if the main has no call to templatedPrintMsg, 
+                	// the function definition doesn't exist in the code
+                	// this maybe compiler dependent - eg. CLANG vs MSCV
+                }
+            \end{lstlisting}
+            
+        \item Templates can be used to define multiple items, such as type and size in the following example. Templates provide \textit{meta-programming} in C++.
+        \item Example: Template Class
+            \begin{lstlisting}
+                #include <iostream>
+                
+                // template is evaluated at compile time
+                template<typename T, int N>
+                class Array
+                {
+                private:
+                	T m_Array[N];
+                public:
+                	int GetSize() const
+                	{
+                		return N;
+                	}
+                };
+
+                int main()
+                {
+                	Array<float, 5> array0;
+                	Array<std::string, 6> array1;
+                	Log(array0.GetSize());	// prints 5
+                	Log(array1.GetSize());	// prints 6
+                }
+
+            \end{lstlisting}
+    
+    \end{enumerate}
+    
+\end{document}
